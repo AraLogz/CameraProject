@@ -1,4 +1,5 @@
 <resources>
     <string name="app_name">CameraProject</string>
     <string name="take_picture">Capture</string>
+    <string name="capturing">Capturing</string>
 </resources>
