@@ -17,6 +17,7 @@ import android.hardware.camera2.TotalCaptureResult;
 import android.hardware.camera2.params.StreamConfigurationMap;
 import android.media.Image;
 import android.media.ImageReader;
+import android.os.BatteryManager;
 import android.os.Environment;
 import android.os.Handler;
 import android.os.HandlerThread;
@@ -70,11 +71,13 @@ public class camera extends AppCompatActivity{
     private String TAG;
     private CameraManager manager;
     private int rotation;
+    private BatteryManager batteryManager;
 
-    camera(Context context, TextureView textureView, CameraManager manager, int rotation, String TAG){
+    camera(Context context, TextureView textureView, CameraManager manager, BatteryManager batteryManager, int rotation, String TAG){
         this.context = context;
         this.textureView = textureView;
         this.manager = manager;
+        this.batteryManager = batteryManager;
         this.rotation = rotation;
         this.TAG = TAG;
     }
@@ -159,12 +162,13 @@ public class camera extends AppCompatActivity{
                         image = reader.acquireNextImage();
                         ByteBuffer buffer = image.getPlanes()[0].getBuffer();
                         byte[] bytes = new byte[buffer.capacity()];
-
-                        //Tweet
-                        new AsyncTwitter().execute("Nueva imagen capturada", path);
-
                         buffer.get(bytes);
                         save(bytes);
+
+                        //BatteryManager bm = (BatteryManager)getSystemService(BATTERY_SERVICE);
+                        int batLevel = batteryManager.getIntProperty(BatteryManager.BATTERY_PROPERTY_CAPACITY);
+                        //Tweet
+                        new AsyncTwitter().execute("Nueva imagen capturada. " + nombre + ". Nivel de batería: " + batLevel + "%.", path);
                     } catch (FileNotFoundException e) {
                         e.printStackTrace();
                     } catch (IOException e) {

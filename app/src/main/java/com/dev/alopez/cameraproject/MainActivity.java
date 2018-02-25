@@ -8,6 +8,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.graphics.SurfaceTexture;
 import android.hardware.camera2.CameraManager;
+import android.os.BatteryManager;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
@@ -42,13 +43,15 @@ public class MainActivity extends AppCompatActivity {
 
         takePictureButton = (Button) findViewById(R.id.btn_takepicture);
 
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+
         setup();
 
         takePictureButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 takePictureButton.setText(getResources().getString(R.string.capturing));
-                alarmManager.setRepeating(AlarmManager.RTC_WAKEUP, Calendar.getInstance().getTimeInMillis(), 1 * 60000, pendingIntent);
+                alarmManager.setRepeating(AlarmManager.RTC_WAKEUP, Calendar.getInstance().getTimeInMillis(), 15 * 60000, pendingIntent);
             }
         });
 
@@ -56,7 +59,7 @@ public class MainActivity extends AppCompatActivity {
         manager = (CameraManager) getSystemService(Context.CAMERA_SERVICE);
         // Orientation
         int rotation = getWindowManager().getDefaultDisplay().getRotation();
-        cam = new camera(this, textureView, manager, rotation, TAG);
+        cam = new camera(this, textureView, manager, (BatteryManager)getSystemService(BATTERY_SERVICE), rotation, TAG);
 
         assert takePictureButton != null;
     }
@@ -78,13 +81,6 @@ public class MainActivity extends AppCompatActivity {
         registerReceiver(broadcastReceiver, new IntentFilter(this.getPackageName()));
         pendingIntent = PendingIntent.getBroadcast(this, 0, new Intent(this.getPackageName()), 0);
         alarmManager = (AlarmManager)(this.getSystemService(Context.ALARM_SERVICE));
-    }
-
-    public void unlockScreen(){
-        getWindow().addFlags(WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED |
-                WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON |
-                WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON |
-                WindowManager.LayoutParams.FLAG_ALLOW_LOCK_WHILE_SCREEN_ON);
     }
 
     TextureView.SurfaceTextureListener textureListener = new TextureView.SurfaceTextureListener() {
